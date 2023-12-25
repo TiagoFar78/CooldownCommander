@@ -1,0 +1,7 @@
+name: TF_CooldownCommander
+version: 1.0
+api-version: '1.20'
+author: TiagoFar78
+main: net.tiagofar78.cooldowncommander.CooldownCommander
+depend:
+- Essentials

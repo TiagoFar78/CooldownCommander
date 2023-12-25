@@ -12,16 +12,10 @@ public class CooldownCommander extends JavaPlugin {
 	private static Essentials ess;
 	
 	@Override
-	public void onEnable() {		
-		getCommand("tpa").setExecutor(new TpaCommand());
-		
+	public void onEnable() {
 		ess = (Essentials) Bukkit.getPluginManager().getPlugin("Essentials");
 		
-		if (ess == null) {
-			Bukkit.getPluginManager().disablePlugin(this);
-			
-			System.err.println("No essentials plugin was found! Disabling TF_CooldownCommander..");			
-		}
+		getServer().getPluginManager().registerEvents(new Events(), this);
 	}
 	
 	public static Essentials getEssentials() {

@@ -5,25 +5,25 @@ import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.regex.Pattern;
 
-import org.bukkit.command.Command;
-import org.bukkit.command.CommandExecutor;
-import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+import org.bukkit.event.Listener;
 import org.bukkit.permissions.PermissionAttachmentInfo;
 
 import com.earth2me.essentials.Essentials;
 import com.earth2me.essentials.User;
 
-public class TpaCommand implements CommandExecutor {
+import net.ess3.api.events.TPARequestEvent;
 
-	@Override
-	public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
-		if (!(sender instanceof Player)) {
-			System.out.println("Exclusive command for players");
-			return false;
-		}
+public class Events implements Listener {
+	
+	public void playerCommand(TPARequestEvent e) {
+		System.out.println("Event fireou banger");
 		
-		Player player = (Player) sender;
+		Essentials ess = CooldownCommander.getEssentials();
+		
+		String label = "tpa";
+		
+		Player player = e.getRequester().getPlayer();
 		
 		int tpaCooldownSeconds = -1;
 		for (PermissionAttachmentInfo permission : player.getEffectivePermissions()) {
@@ -31,14 +31,14 @@ public class TpaCommand implements CommandExecutor {
 			
 			if (permissionName.startsWith(CooldownCommander.TPA_COOLDOWN_PERMISSION_START)) {
 				tpaCooldownSeconds = stringToInt(permissionName.substring(CooldownCommander.TPA_COOLDOWN_PERMISSION_START.length()));
+				break;
 			}
 		}
 		
 		if (tpaCooldownSeconds == -1) {
-			return false;
+			System.out.println("segundos -1");
+			return;
 		}
-		
-		Essentials ess = CooldownCommander.getEssentials();
 		
 		Pattern pattern = Pattern.compile(label);
 		
@@ -50,13 +50,14 @@ public class TpaCommand implements CommandExecutor {
 		Date expiringDate = calendar.getTime();
 		
 		if (user.getCommandCooldownExpiry(label).before(expiringDate)) {
-			return false;
+			System.out.println("Cooldown antigo tava mais pequeno");
+			return;
 		}
 		
 		user.clearCommandCooldown(pattern);
 		user.addCommandCooldown(pattern, expiringDate, true);
 		
-		return false;
+		System.out.println("Meteu uma menor");
 	}
 
 	private static int stringToInt(String s) {
@@ -67,5 +68,5 @@ public class TpaCommand implements CommandExecutor {
 			return -1;
 		}
 	}
-
+	
 }
