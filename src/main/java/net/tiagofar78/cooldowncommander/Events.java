@@ -6,23 +6,20 @@ import java.util.GregorianCalendar;
 import java.util.regex.Pattern;
 
 import org.bukkit.entity.Player;
+import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.permissions.PermissionAttachmentInfo;
 
 import com.earth2me.essentials.Essentials;
 import com.earth2me.essentials.User;
+import com.earth2me.essentials.config.entities.CommandCooldown;
 
 import net.ess3.api.events.TPARequestEvent;
 
 public class Events implements Listener {
 	
+	@EventHandler
 	public void playerCommand(TPARequestEvent e) {
-		System.out.println("Event fireou banger");
-		
-		Essentials ess = CooldownCommander.getEssentials();
-		
-		String label = "tpa";
-		
 		Player player = e.getRequester().getPlayer();
 		
 		int tpaCooldownSeconds = -1;
@@ -36,28 +33,35 @@ public class Events implements Listener {
 		}
 		
 		if (tpaCooldownSeconds == -1) {
-			System.out.println("segundos -1");
 			return;
 		}
 		
-		Pattern pattern = Pattern.compile(label);
+		Essentials ess = CooldownCommander.getEssentials();
+		
+		String label = "tpa";
+		
+		Pattern pattern = Pattern.compile(label + "( .*)?");
 		
 		User user = ess.getUser(player);
+		
+		for (CommandCooldown ccc : user.getCooldownsList()) {
+			if (ccc.pattern().pattern().startsWith(label)) {
+				pattern = ccc.pattern();
+			}
+		}
 		
 		Calendar calendar = new GregorianCalendar();
 		calendar.setTime(new Date());
 		calendar.add(Calendar.SECOND, tpaCooldownSeconds);
 		Date expiringDate = calendar.getTime();
 		
-		if (user.getCommandCooldownExpiry(label).before(expiringDate)) {
-			System.out.println("Cooldown antigo tava mais pequeno");
+		Date currentExpiringDate = user.getCommandCooldownExpiry(label);		
+		if (currentExpiringDate == null || currentExpiringDate.before(expiringDate)) {
 			return;
 		}
 		
 		user.clearCommandCooldown(pattern);
 		user.addCommandCooldown(pattern, expiringDate, true);
-		
-		System.out.println("Meteu uma menor");
 	}
 
 	private static int stringToInt(String s) {
